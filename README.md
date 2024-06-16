@@ -80,20 +80,20 @@ char Pop(stack *st)
 - **ShowTop** - похожа на **Pop**, но не удаляет элемент из стека.
 ```C
 bool ShowTop(stack st, char *data) {
-    if(data){
-        if(st.top){
-            *data = st.top->data;
-            return true;
+    if(data){                     //Проверка, чтобы указатель на данные был не NULL
+        if(st.top){               //Проверка не пуст ли стек
+            *data = st.top->data; //Копируем значение в data
+            return true;          //Истина если программа отработала верно
         }
-        else return false;
+        else return false;        //Ложь иначе
     }
-    else return false;
+    else return false;            //Ложь иначе
 }
 ```
 - **isEmpty** - функция, проверяющая пуст ли стек.
 ```C
 bool isEmpty(stack  st){
-	if (st.top)
+	if (st.top) 
 		return false;
 	return true;
 }
@@ -102,32 +102,55 @@ bool isEmpty(stack  st){
 ```C
 void Clearstack(stack *st)
 {
-    if(st){
-        if(st->top){
-            node *el = st->top;
-            while(el){
-                node *ptr = el;
-                el = el->next;
-                st->size--;
-                free(ptr);
+    if(st){                     //Проверка, чтобы указатель на стек был не NULL
+        if(st->top){            //Проверка не пуст ли стек
+            node *el = st->top; //Указатель на вершину стека
+            while(el){          //Цикл, пока el не NULL 
+                node *ptr = el; //Указатель, на узел который нужно удалить
+                el = el->next;  //el теперь указывает на следующий узел
+                st->size--;     //Размер стека -1
+                free(ptr);      //Удалить узел на который указывает ptr
             }
-            st->top = NULL;
+            st->top = NULL;     //Вершина теперь NULL
         }
-        else return;
+        else return;            //если не прошла проверку, значит останавливаем фукнцию
     }
-    else return;
+    else return;                //если не прошла проверку, значит останавливаем фукнцию
 }
 ```
 - **PrintStack** - печатает все элементы стека начиная с вершины.
 ```C
 void PrintStack(stack st){
-    if(!isEmpty(st)){
-        node *ptr = st.top;
-        while (ptr){
-            printf("%c\n", ptr->data);
-            ptr = ptr->next;
+    if(!isEmpty(st)){                  //Проверка, что стек не пустой
+        node *ptr = st.top;            //Указатель на вершину стека 
+        while (ptr){                   //Цикл пока ptr не NULL
+            printf("%c\n", ptr->data); //Выводим данные 
+            ptr = ptr->next;           //Указатель теперь указывает на следующий элемент
         }
     }
-    else printf("stack is empty\n");
+    else printf("stack is empty\n");   //Если стек пуст
+}
+```
+
+3. Функции проверки выражений
+
+- **CheckSentens** - функция, которая 
+```C
+bool CheckSentes(stack *st) {
+    if (st) {
+        int i = 0;
+        while (!isEmpty(*st)) {
+            char ptr = Pop(st);
+            if (('0' <= ptr && ptr <= '9') || (('a' <= ptr && ptr <= 'z') || ('A' <= ptr && ptr <= 'Z'))) {
+                if (i == 1) return false;
+            }
+            if ((ptr == '+') || (ptr == '-') || (ptr == '*') || (ptr == '/')) {
+                if (i == 0 || i == 2) return false;
+            }
+            i++;
+        }
+        return true;
+    }
+    return false;
 }
 ```
