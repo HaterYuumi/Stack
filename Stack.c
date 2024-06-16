@@ -119,12 +119,15 @@ bool CheckSentes(stack *st) {
 bool ValidCheck(char *st) {
     if (st) {
         stack save = {NULL, 0};
-        bool ysl = false; // ysl условия на скобки
+        bool ysl = false; // условие на скобки
         for (int i = 0; st[i]; i++) {
             if (st[i] == '(') {
                 ysl = true;
             } else if (st[i] == ')') {
-                if (!ysl) return false;
+                if (!ysl) {
+                    Clearstack(&save);
+                    return false;
+                }
                 ysl = false;
             } else if (st[i] != ' ') {
                 if (ysl && (st[i] == '+' || st[i] == '-')) {
@@ -133,8 +136,13 @@ bool ValidCheck(char *st) {
                 Push(&save, st[i]);
             }
         }
-        if (isEmpty(save)) return false;
-        if (ysl) return false;
+        if (isEmpty(save)) {
+            return false;
+        }
+        if (ysl) {
+            Clearstack(&save);
+            return false;
+        }
 
         bool flag = true;
         while (flag) {
@@ -148,12 +156,16 @@ bool ValidCheck(char *st) {
             if (CheckSentes(&sentes)) {
                 Push(&save, 'v');
             } else {
+                Clearstack(&sentes);
+                Clearstack(&save);
                 return false;
             }
+            Clearstack(&sentes);
             if (save.size == 1) {
                 flag = false;
             }
         }
+        Clearstack(&save);
         return true;
     }
     return false;
@@ -162,7 +174,7 @@ bool ValidCheck(char *st) {
 int main() {
     stack st = {NULL, 0};
 
-    char *str = "(-1)-(-2)-(-3)-(-4)-(-5)-6";
+    char *str = "(-2)";
     if (ValidCheck(str))
         printf("Expression is correct!!\n");
     else
