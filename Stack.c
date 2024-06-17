@@ -119,24 +119,32 @@ bool CheckSentes(stack *st) {
 bool ValidCheck(char *str) {
     if (str) {
         stack save = {NULL, 0};
-        bool ysl = false; // условие на скобки
+        stack brackets = {NULL, 0};
+        bool ysl = false;
         for (int i = 0; str[i]; i++) {
             if (str[i] == '(') {
+                Push(&brackets, str[i]);
+                if (str[i+1] && str[i+1] == ')'){
+                    Clearstack(&brackets);
+                    return false;
+                } 
                 ysl = true;
             } else if (str[i] == ')') {
-                if (!ysl) {
+                if (isEmpty(brackets)) {
                     Clearstack(&save);
                     return false;
+                } else {
+                    Pop(&brackets);
                 }
                 ysl = false;
             } else if (str[i] != ' ') {
-                if (ysl && (str[i] == '+' || str[i] == '-')) {
+                if (str[i-1] && str[i-1] == '(' && (str[i] == '+' || str[i] == '-')) {
                     Push(&save, '0');
                 }
                 Push(&save, str[i]);
             }
         }
-        if (isEmpty(save)) {
+        if (isEmpty(save) || !isEmpty(brackets)) {
             return false;
         }
         if (ysl) {
@@ -147,7 +155,7 @@ bool ValidCheck(char *str) {
         bool flag = true;
         while (flag) {
             stack sentes = {NULL, 0};
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 3 && !isEmpty(save); i++) {
                 char tmp = Pop(&save);
                 if (tmp) {
                     Push(&sentes, tmp);
@@ -174,7 +182,7 @@ bool ValidCheck(char *str) {
 int main() {
     stack st = {NULL, 0};
 
-    char *str = "(-2)";
+    char *str = "()";
     if (ValidCheck(str))
         printf("Expression is correct!!\n");
     else
