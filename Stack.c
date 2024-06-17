@@ -116,33 +116,25 @@ bool CheckSentes(stack *st) {
     return false;
 }
 
-bool ValidCheck(char *st) {
-    if (st) {
+bool ValidCheck(char *str) {
+    if (str) {
         stack save = {NULL, 0};
-        bool ysl = false; // условие на скобки
-        for (int i = 0; st[i]; i++) {
-            if (st[i] == '(') {
+        bool ysl = false; // ysl условия на скобки
+        for (int i = 0; str[i]; i++) {
+            if (str[i] == '(') {
                 ysl = true;
-            } else if (st[i] == ')') {
-                if (!ysl) {
-                    Clearstack(&save);
-                    return false;
-                }
+            } else if (str[i] == ')') {
+                if (!ysl) return false;
                 ysl = false;
-            } else if (st[i] != ' ') {
-                if (ysl && (st[i] == '+' || st[i] == '-')) {
+            } else if (str[i] != ' ') {
+                if (ysl && (str[i] == '+' || str[i] == '-')) {
                     Push(&save, '0');
                 }
-                Push(&save, st[i]);
+                Push(&save, str[i]);
             }
         }
-        if (isEmpty(save)) {
-            return false;
-        }
-        if (ysl) {
-            Clearstack(&save);
-            return false;
-        }
+        if (isEmpty(save)) return false;
+        if (ysl) return false;
 
         bool flag = true;
         while (flag) {
@@ -156,16 +148,12 @@ bool ValidCheck(char *st) {
             if (CheckSentes(&sentes)) {
                 Push(&save, 'v');
             } else {
-                Clearstack(&sentes);
-                Clearstack(&save);
                 return false;
             }
-            Clearstack(&sentes);
             if (save.size == 1) {
                 flag = false;
             }
         }
-        Clearstack(&save);
         return true;
     }
     return false;
@@ -174,7 +162,7 @@ bool ValidCheck(char *st) {
 int main() {
     stack st = {NULL, 0};
 
-    char *str = "(-2)";
+    char *str = "(-1)-(-2)-(-3)-(-4)-(-5)-6";
     if (ValidCheck(str))
         printf("Expression is correct!!\n");
     else
