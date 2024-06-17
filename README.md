@@ -190,7 +190,7 @@ bool ValidCheck(char *str) {
                 Push(&save, str[i]);               //То добавляем в стек
             }
         }
-        if (isEmpty(save) || !isEmpty(brackets)) { //Если
+        if (isEmpty(save) || !isEmpty(brackets)) { //Если стек выражений пуст или скобки не закрылись
             return false;                          //Значит ложь
         }
         if (ysl) {                                
