@@ -225,4 +225,19 @@ bool ValidCheck(char *str) {
     return false;                                  //Если не строка, то ошибка и останавливаем функцию
 }
 ```
+
 ## Тесты и результаты
+
+```C
+char *str = "2+2"; //Expression is correct!!
+char *str = "()"; //The expression is not correct!!
+char *str = "(2/2)"; //Expression is correct!!
+char *str = "(-2)()"; //The expression is not correct!!
+char *str = "-2+(1)"; //The expression is not correct!!
+char *str = "(((-2)-2)-2)"; //Expression is correct!!
+char *str = "+1*"; //The expression is not correct!!
+char *str = "(2-1/(4*3))"; //Expression is correct!!
+char *str = "++"; //The expression is not correct!!
+char *str = "2"; //Expression is correct!!
+char *str = "(-7)"; //Expression is correct!!
+```
