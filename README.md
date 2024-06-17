@@ -134,20 +134,70 @@ void PrintStack(stack st){
 
 3. Функции проверки выражений
 
-- **CheckSentens** - функция, которая 
+- **CheckSentens** - функция, которая проверяет, что тройка элементов правильная, то есть например *2-3*, а не *+2-*.
 ```C
 bool CheckSentes(stack *st) {
-    if (st) {
-        int i = 0;
-        while (!isEmpty(*st)) {
-            char ptr = Pop(st);
+    if (st) {                                       //Проверка, чтобы указатель на стек был не NULL
+        int i = 0;                                  //Позиция в тройке
+        while (!isEmpty(*st)) {                     //Цикл пока указатель на стек не NULL
+            char ptr = Pop(st);                     //Достаем данные из вершины стека
             if (('0' <= ptr && ptr <= '9') || (('a' <= ptr && ptr <= 'z') || ('A' <= ptr && ptr <= 'Z'))) {
-                if (i == 1) return false;
-            }
+                if (i == 1) return false;           
+            }                                       //Если в тройке второй элемент цифра или латинская буква, то ложь
             if ((ptr == '+') || (ptr == '-') || (ptr == '*') || (ptr == '/')) {
-                if (i == 0 || i == 2) return false;
+                if (i == 0 || i == 2) return false; 
+            }                                       //Если в тройке первый или третьий элемент математический оператор, то ложь
+            i++;                                    //Следущая позиция
+        }
+        return true;                                //Если цикл закончился то истина
+    }
+    return false;                                   //Ложь, если проверка не прошла
+}
+```
+Идея функции: 
+
+1. Отдельно проверять правильность скобки, и добавить в стек *save* строку без скобок.
+   - когда встретим число в скобке со знаком плюс или минус ставить передним 0: **(-5)** → **0-5**.
+2. С помощью функции проверять *CheckSentes* и если истино то заменять тройку на *v*.
+- **ValidCheck** - функция провеврки 
+```C
+bool ValidCheck(char *str) {
+    if (str) {
+        stack save = {NULL, 0};
+        bool ysl = false;              //Флаг на скобки
+        for (int i = 0; str[i]; i++) {
+            if (str[i] == '(') {
+                ysl = true;
+            } else if (str[i] == ')') {
+                if (!ysl) return false;
+                ysl = false;
+            } else if (str[i] != ' ') {
+                if (ysl && (str[i] == '+' || str[i] == '-')) {
+                    Push(&save, '0');
+                }
+                Push(&save, str[i]);
             }
-            i++;
+        }
+        if (isEmpty(save)) return false;
+        if (ysl) return false;
+        
+        bool flag = true;
+        while (flag) {
+            stack sentes = {NULL, 0};
+            for (int i = 0; i < 3; i++) {
+                char tmp = Pop(&save);
+                if (tmp) {
+                    Push(&sentes, tmp);
+                }
+            }
+            if (CheckSentes(&sentes)) {
+                Push(&save, 'v');
+            } else {
+                return false;
+            }
+            if (save.size == 1) {
+                flag = false;
+            }
         }
         return true;
     }
