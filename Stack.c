@@ -98,17 +98,30 @@ void PrintStack(stack st){
 }
 
 
-bool CheckSentes(stack *st) {
+bool CheckSentes(stack *st, bool *flag) {
     if (st) {
         int i = 0;
+        *flag = false;
         while (!isEmpty(*st)) {
             char ptr = Pop(st);
             if (('0' <= ptr && ptr <= '9') || (('a' <= ptr && ptr <= 'z') || ('A' <= ptr && ptr <= 'Z'))) {
                 if (i == 1) return false;
             }
+            else {
+                if (ptr == '(' && i!=0){
+                    return false;
+                } else {
+                    if (ptr == ')' && i!=2){
+                        return false;
+                    }
+                }
+                
+            }
             if ((ptr == '+') || (ptr == '-') || (ptr == '*') || (ptr == '/')) {
+                *flag = true;
                 if (i == 0 || i == 2) return false;
             }
+            
             i++;
         }
         return true;
@@ -119,59 +132,40 @@ bool CheckSentes(stack *st) {
 bool ValidCheck(char *str) {
     if (str) {
         stack save = {NULL, 0};
-        stack brackets = {NULL, 0};
-        bool ysl = false;
         for (int i = 0; str[i]; i++) {
             if (str[i] == '(') {
-                Push(&brackets, str[i]);
                 if (str[i+1] && str[i+1] == ')'){
-                    Clearstack(&brackets);
                     return false;
                 } 
-                ysl = true;
-            } else if (str[i] == ')') {
-                if (isEmpty(brackets)) {
-                    Clearstack(&save);
-                    return false;
-                } else {
-                    Pop(&brackets);
-                }
-                ysl = false;
             } else if (str[i] != ' ') {
-                if (str[i-1] && str[i-1] == '(' && (str[i] == '+' || str[i] == '-')) {
+                if (i>0 && str[i-1] == '(' && (str[i] == '+' || str[i] == '-')) {
                     Push(&save, '0');
                 }
                 Push(&save, str[i]);
             }
         }
-        if (isEmpty(save) || !isEmpty(brackets)) {
+        if (isEmpty(save)) {
             return false;
         }
-        if (ysl) {
-            Clearstack(&save);
-            return false;
-        }
-
         bool flag = true;
+        bool ysl = false;
         while (flag) {
             stack sentes = {NULL, 0};
+            if (save.size == 2) return false;
+            if(ysl) return false;
+            if (save.size == 1) {
+                flag = false;
+            }
             for (int i = 0; i < 3 && !isEmpty(save); i++) {
                 char tmp = Pop(&save);
                 if (tmp) {
                     Push(&sentes, tmp);
                 }
             }
-            if (CheckSentes(&sentes)) {
+            if (CheckSentes(&sentes, &ysl)) {
                 Push(&save, 'v');
-            } else {
-                Clearstack(&sentes);
-                Clearstack(&save);
-                return false;
             }
             Clearstack(&sentes);
-            if (save.size == 1) {
-                flag = false;
-            }
         }
         Clearstack(&save);
         return true;
@@ -181,12 +175,10 @@ bool ValidCheck(char *str) {
 
 int main() {
     stack st = {NULL, 0};
-
-    char *str = "()";
+    char *str = "(2**2)";
     if (ValidCheck(str))
         printf("Expression is correct!!\n");
     else
         printf("The expression is not correct!!\n");
-
-    return 0;
+    
 }
