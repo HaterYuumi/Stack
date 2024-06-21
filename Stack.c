@@ -1,3 +1,5 @@
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -98,28 +100,16 @@ void PrintStack(stack st){
 }
 
 
-bool CheckSentes(stack *st, bool *flag) {
+bool CheckSentes(stack *st) {
     if (st) {
         int i = 0;
-        *flag = false;
         while (!isEmpty(*st)) {
             char ptr = Pop(st);
             if (('0' <= ptr && ptr <= '9') || (('a' <= ptr && ptr <= 'z') || ('A' <= ptr && ptr <= 'Z'))) {
-                if (i == 1) return false;
-            }
-            else {
-                if (ptr == '(' && i!=0){
-                    return false;
-                } else {
-                    if (ptr == ')' && i!=2){
-                        return false;
-                    }
-                }
-                
+                if (i % 2 != 0) return false;
             }
             if ((ptr == '+') || (ptr == '-') || (ptr == '*') || (ptr == '/')) {
-                *flag = true;
-                if (i == 0 || i == 2) return false;
+                if (i % 2 == 0) return false;
             }
             
             i++;
@@ -133,11 +123,37 @@ bool ValidCheck(char *str) {
     if (str) {
         stack save = {NULL, 0};
         for (int i = 0; str[i]; i++) {
+            stack sentes = {NULL, 0};
             if (str[i] == '(') {
                 if (str[i+1] && str[i+1] == ')'){
                     return false;
                 } 
-            } else if (str[i] != ' ') {
+            }
+            if (str[i] == ')'){
+                if (str[i+1] && str[i+1] == '('){
+                    return false;
+                }
+                char data;
+                ShowTop(save, &data);
+                for (int j = i-1; data != '('; j--){
+                    int tmp = Pop(&save);
+                    if (tmp){
+                        Push(&sentes, tmp);
+                    }
+                    ShowTop(save, &data);
+                }
+                Pop(&save);
+                for (int j=0; !isEmpty(sentes); j++){
+                    int tmp = Pop(&sentes);
+                    if(tmp){
+                        Push(&save, tmp);
+                    }
+                }
+            }
+            if (i>0 && str[i-1] != '(' && (str[i] == '+' || str[i] == '-')){
+                return false;
+            }
+            if (str[i] != ' ' && str[i] != ')') {
                 if (i>0 && str[i-1] == '(' && (str[i] == '+' || str[i] == '-')) {
                     Push(&save, '0');
                 }
@@ -147,26 +163,10 @@ bool ValidCheck(char *str) {
         if (isEmpty(save)) {
             return false;
         }
-        bool flag = true;
-        bool ysl = false;
-        while (flag) {
-            stack sentes = {NULL, 0};
-            if (save.size == 2) return false;
-            if(ysl) return false;
-            if (save.size == 1) {
-                flag = false;
-            }
-            for (int i = 0; i < 3 && !isEmpty(save); i++) {
-                char tmp = Pop(&save);
-                if (tmp) {
-                    Push(&sentes, tmp);
-                }
-            }
-            if (CheckSentes(&sentes, &ysl)) {
-                Push(&save, 'v');
-            }
-            Clearstack(&sentes);
+        if(!CheckSentes(&save)){
+            return false;
         }
+        
         Clearstack(&save);
         return true;
     }
@@ -175,9 +175,9 @@ bool ValidCheck(char *str) {
 
 int main() {
     stack st = {NULL, 0};
-    char *str = "(2**2)";
+    char *str = "((-2))+(1)";
     if (ValidCheck(str))
-        printf("Expression is correct!!\n");
+        printf("Expression is correct!!\n"); 
     else
         printf("The expression is not correct!!\n");
     
