@@ -105,6 +105,7 @@ bool CheckSentes(stack *st) {
         int i = 0;
         while (!isEmpty(*st)) {
             char ptr = Pop(st);
+            if(ptr == '(' || ptr == ')') return false;
             if (('0' <= ptr && ptr <= '9') || (('a' <= ptr && ptr <= 'z') || ('A' <= ptr && ptr <= 'Z'))) {
                 if (i % 2 != 0) return false;
             }
@@ -126,11 +127,13 @@ bool ValidCheck(char *str) {
             stack sentes = {NULL, 0};
             if (str[i] == '(') {
                 if (str[i+1] && str[i+1] == ')'){
+                    printf("1");
                     return false;
                 } 
             }
             if (str[i] == ')'){
                 if (str[i+1] && str[i+1] == '('){
+                    printf("2");
                     return false;
                 }
                 char data;
@@ -150,9 +153,6 @@ bool ValidCheck(char *str) {
                     }
                 }
             }
-            if (i>0 && str[i-1] != '(' && (str[i] == '+' || str[i] == '-')){
-                return false;
-            }
             if (str[i] != ' ' && str[i] != ')') {
                 if (i>0 && str[i-1] == '(' && (str[i] == '+' || str[i] == '-')) {
                     Push(&save, '0');
@@ -161,9 +161,12 @@ bool ValidCheck(char *str) {
             }
         }
         if (isEmpty(save)) {
+            printf("4");
             return false;
         }
+        PrintStack(save);
         if(!CheckSentes(&save)){
+            printf("5");
             return false;
         }
         
