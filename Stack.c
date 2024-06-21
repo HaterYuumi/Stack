@@ -1,5 +1,3 @@
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -122,36 +120,40 @@ bool CheckSentes(stack *st) {
 
 bool ValidCheck(char *str) {
     if (str) {
+        bool flag = false;
         stack save = {NULL, 0};
         for (int i = 0; str[i]; i++) {
             stack sentes = {NULL, 0};
             if (str[i] == '(') {
+                flag = true;
                 if (str[i+1] && str[i+1] == ')'){
-                    printf("1");
+                    Clearstack(&save);
                     return false;
                 } 
             }
             if (str[i] == ')'){
                 if (str[i+1] && str[i+1] == '('){
-                    printf("2");
+                    Clearstack(&save);
                     return false;
                 }
                 char data;
-                ShowTop(save, &data);
-                for (int j = i-1; data != '('; j--){
-                    int tmp = Pop(&save);
-                    if (tmp){
-                        Push(&sentes, tmp);
-                    }
-                    ShowTop(save, &data);
+                
+                while (ShowTop(save, &data) && data != '(') {
+                    char tmp = Pop(&save);
+                    if (tmp) Push(&sentes, tmp);
                 }
+                
                 Pop(&save);
-                for (int j=0; !isEmpty(sentes); j++){
-                    int tmp = Pop(&sentes);
-                    if(tmp){
-                        Push(&save, tmp);
-                    }
+                flag = false;
+                
+                if (isEmpty(save) || !CheckSentes(&sentes)) {
+                    Clearstack(&save);
+                    Clearstack(&sentes);
+                    return false;
+                } else {
+                    Push(&save, 'v');
                 }
+                
             }
             if (str[i] != ' ' && str[i] != ')') {
                 if (i>0 && str[i-1] == '(' && (str[i] == '+' || str[i] == '-')) {
@@ -160,7 +162,7 @@ bool ValidCheck(char *str) {
                 Push(&save, str[i]);
             }
         }
-        if (isEmpty(save)) {
+        if (isEmpty(save) || flag) {
             printf("4");
             return false;
         }
@@ -178,7 +180,7 @@ bool ValidCheck(char *str) {
 
 int main() {
     stack st = {NULL, 0};
-    char *str = "((-2))+(1)";
+    char *str = "2-2-2-1/4*3("; //Expression is correct!!
     if (ValidCheck(str))
         printf("Expression is correct!!\n"); 
     else
