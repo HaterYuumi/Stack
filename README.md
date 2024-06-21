@@ -137,21 +137,22 @@ void PrintStack(stack st){
 - **CheckSentens** - функция, которая проверяет, что тройка элементов правильная, то есть например *2-3*, а не *+2-*.
 ```C
 bool CheckSentes(stack *st) {
-    if (st) {                                       //Проверка, чтобы указатель на стек был не NULL
-        int i = 0;                                  //Позиция в тройке
-        while (!isEmpty(*st)) {                     //Цикл пока указатель на стек не NULL
-            char ptr = Pop(st);                     //Достаем данные из вершины стека
-            if (('0' <= ptr && ptr <= '9') || (('a' <= ptr && ptr <= 'z') || ('A' <= ptr && ptr <= 'Z'))) {
-                if (i == 1) return false;           
-            }                                       //Если в тройке второй элемент цифра или латинская буква, то ложь
+    if (st) {                                          //Проверка, чтобы указатель на стек был не NULL
+        int i = 0;                                     //Позиция в тройке
+        while (!isEmpty(*st)) {                        //Цикл пока указатель на стек не NULL
+            char ptr = Pop(st);                        //Достаем данные из вершины стека
+	    if(ptr == '(' || ptr == ')') return false; //Ошибка если остались скобки
+	    if (('0' <= ptr && ptr <= '9') || (('a' <= ptr && ptr <= 'z') || ('A' <= ptr && ptr <= 'Z'))) {
+                if (i % 2 != 0) return false;           
+            }                                          //Если нечетной позиции цифра или латинская буква, то ложь
             if ((ptr == '+') || (ptr == '-') || (ptr == '*') || (ptr == '/')) {
-                if (i == 0 || i == 2) return false; 
-            }                                       //Если в тройке первый или третьий элемент математический оператор, то ложь
-            i++;                                    //Следущая позиция
+                if (i % 2 == 0) return false; 
+            }                                          //Если четной позиции математический оператор, то ложь
+            i++;                                       //Следущая позиция
         }
-        return true;                                //Если цикл закончился то истина
+        return true;                                   //Если цикл закончился то истина
     }
-    return false;                                   //Ложь, если проверка не прошла
+    return false;                                      //Ложь, если проверка не прошла
 }
 ```
 Идея функции: 
@@ -163,66 +164,55 @@ bool CheckSentes(stack *st) {
 - **ValidCheck** - функция провеврки выражений
 ```C
 bool ValidCheck(char *str) {
-    if (str) {                                     //Проверяем, чтобы строка 
-        stack save = {NULL, 0};                    //Стек для выражения без скобок 
-        stack brackets = {NULL, 0};                //Стек для скобок
-        bool ysl = false;                          //Флаг на открывающюю скобку
-        for (int i = 0; str[i]; i++) {             //Идем по строке 
-            if (str[i] == '(') {                   //Находим открывающую скобку
-                Push(&brackets, str[i]);           //Добавляем скобку в стек
-                if (str[i+1] && str[i+1] == ')'){  //Если после открывающей скобки сразу закрывающий
-                    Clearstack(&brackets);         //Очищаем стек скобок
-                    return false;                  //Ложь и останавливаем функцию
+    if (str) {                                               //Проверяем, чтобы строка 
+        stack save = {NULL, 0};                              //Стек для выражения без скобок 
+        for (int i = 0; str[i]; i++) {                       //Идем по строке 
+            if (str[i] == '(') {                             //Находим открывающую скобку
+		stack sentes = {NULL, 0};                    //Временное место хранение выражения
+		if (str[i+1] && str[i+1] == ')'){            //Если после открывающей скобки сразу закрывающий
+                    return false;                            //Ложь и останавливаем функцию
                 } 
-                ysl = true;                        //Флаг
-            } else if (str[i] == ')') {            //Если закрывающая
-                if (isEmpty(brackets)) {           //Но нет открывающей скобки
-                    Clearstack(&save);             //Очищаем стек выражений
-                    return false;                  //Ложь и останавливаем функцию
-                } else {                           //То
-                    Pop(&brackets);                //Удаляем открывающюю скобку из стека
+            }
+	    if (str[i] == ')') {                             //Если закрывающая
+                if (i == 0 && str[i+1] && str[i+1] == '(') { //Но нет открывающей скобки
+                    return false;                            //Ложь и останавливаем функцию
                 }
-                ysl = false;                       //Иначе обнуляем флаг
-            } else if (str[i] != ' ') {            //Если любой другой символ
-                if (str[i-1] && str[i-1] == '(' && (str[i] == '+' || str[i] == '-')) {
-                    Push(&save, '0');              //То сначала в стек добавим 0
+		char data;                                   
+		ShowTop(save, &data);                        //Смотрим что в стеке не (
+		for (int j = i-1; data != '('; j--){         
+		    int tmp = Pop(&save);                    //Через tmp
+		    if(tmp){                                 
+			Push(&sentes, tmp);                  //Временно сохраняем
+		    }
+		    ShowTop(save, &data);                    //Смотрим следующий элемент
+		}
+		Pop(&save);                                  //Удаляем открывающую скобку
+		for (int j = 0; !isEmpty(sentes); j++){      //
+		    int tmp = Pop(&sentes);                  //
+		    if(tmp){                                 //
+			Push(&save, tmp);                    //
+		    }
+		}
+            }
+	    if (str[i] != ' ') {                             //Если любой другой символ
+                if (i>0 && str[i-1] == '(' && (str[i] == '+' || str[i] == '-')) {
+                    Push(&save, '0');                        //То сначала в стек добавим 0
                 }
-                Push(&save, str[i]);               //То добавляем в стек
+                Push(&save, str[i]);                         //То добавляем в стек
             }
         }
-        if (isEmpty(save) || !isEmpty(brackets)) { //Если стек выражений пуст или скобки не закрылись
-            return false;                          //Значит ложь
-        }
-        if (ysl) {                                
-            Clearstack(&save);                     //Очищаем стек выражений
-            return false;                          //Если скобки не зкрылись, то ложь
+        if (isEmpty(save)) {                                 //Если стек выражений пуст или скобки не закрылись
+            return false;                                    //Значит ложь
         }
 
-        bool flag = true;                          //Флаг для цикла
-        while (flag) {                             //Цикл если выражение не ошибочно
-            stack sentes = {NULL, 0};              //Стек для тройки
-            for (int i = 0; i < 3 && !isEmpty(save); i++) { //Цикл для добавления тройки
-                char tmp = Pop(&save);             //Достаем из вершины стека save
-                if (tmp) {                         //Если достали без ошибки
-                    Push(&sentes, tmp);            //Добавляем в стек тройки
-                }
-            }
-            if (CheckSentes(&sentes)) {            //Проверка тройки с помощью функции
-                Push(&save, 'v');                  //Если истино, добавляем в стек v
-            } else {                               //Если проверка не прошла
-                Clearstack(&sentes);               //Очищаем стек тройки
-                Clearstack(&save);                 //Очищаем стек выражений
-                return false;                      //Ложь и останавливаем функцию
-            }
-            Clearstack(&sentes);                   //Очищаем стек тройки
-            if (save.size == 1) {                  //Если в стеке только один символ или остались только v
-                flag = false;                      //То остановись цикл
-            }
-        }
-        Clearstack(&save);                         //Очищаем стек выражений
-        return true;                               //Истина и останавливаем функции
+	if (!CheckSentes(&save)){
+            return false;
+	}
+	
+        Clearstack(&save);                                   //Очищаем стек выражений
+        return true;                                         //Истина и останавливаем функции
     }
-    return false;                                  //Если не строка, то ошибка и останавливаем функцию
+    return false;                                            //Если не строка, то ошибка и останавливаем функцию
 }
 ```
 
@@ -233,7 +223,6 @@ char *str = "2+2"; //Expression is correct!!
 char *str = "()"; //The expression is not correct!!
 char *str = "(2/2)"; //Expression is correct!!
 char *str = "(-2)()"; //The expression is not correct!!
-char *str = "-2+(1)"; //The expression is not correct!!
 char *str = "(((-2)-2)-2)"; //Expression is correct!!
 char *str = "+1*"; //The expression is not correct!!
 char *str = "(2-1/(4*3))"; //Expression is correct!!
