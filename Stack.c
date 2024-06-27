@@ -122,6 +122,7 @@ bool ValidCheck(char *str) {
     if (str) {
         bool flag = false;
         stack save = {NULL, 0};
+        if ((str[0] == '+') || (str[0] == '-') || (str[0] == '*') || (str[0] == '/')) return false;
         for (int i = 0; str[i]; i++) {
             stack sentes = {NULL, 0};
             if (str[i] == '(') {
@@ -180,7 +181,7 @@ bool ValidCheck(char *str) {
 
 int main() {
     stack st = {NULL, 0};
-    char *str = "2-2-2-1/4*3("; //Expression is correct!!
+    char *str = "-2 + (1)"; //Expression is correct!!
     if (ValidCheck(str))
         printf("Expression is correct!!\n"); 
     else
